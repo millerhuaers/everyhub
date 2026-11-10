@@ -1,0 +1,16 @@
+name = "everyhub-pixiv"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+# 前端使用：把 i.pximg.net 换成 https://pixiv.everyhub.top
+# 自定义域名：先在 Cloudflare 账号添加 pixiv.everyhub.top，再取消下面注释
+# routes = [{ pattern = "pixiv.everyhub.top", custom_domain = true }]
+
+[vars]
+RATE_LIMIT_PER_MIN = "300"
+
+# 可选限流 KV：wrangler kv namespace create HUB_KV，然后把 id 填进来
+# [[kv_namespaces]]
+# binding = "HUB_KV"
+# id = "REPLACE_WITH_KV_NAMESPACE_ID"

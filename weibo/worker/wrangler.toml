@@ -1,0 +1,16 @@
+name = "everyhub-weibo"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+# 前端使用：把 wx*.sinaimg.cn 换成 https://weibo.everyhub.top
+# 自定义域名：先在 Cloudflare 账号添加 weibo.everyhub.top，再取消下面注释
+# routes = [{ pattern = "weibo.everyhub.top", custom_domain = true }]
+
+[vars]
+RATE_LIMIT_PER_MIN = "300"
+
+# 可选限流 KV：wrangler kv namespace create HUB_KV，然后把 id 填进来
+# [[kv_namespaces]]
+# binding = "HUB_KV"
+# id = "REPLACE_WITH_KV_NAMESPACE_ID"

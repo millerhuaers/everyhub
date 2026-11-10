@@ -1,0 +1,21 @@
+name = "everyhub-ghcr"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+# 前端使用：把 ghcr.io 换成 https://ghcr.everyhub.top
+# 自定义域名：先在 Cloudflare 账号添加 ghcr.everyhub.top，再取消下面注释
+# routes = [{ pattern = "ghcr.everyhub.top", custom_domain = true }]
+
+[vars]
+UPSTREAM_HOST = "ghcr.io"
+TOKEN_HOST = "ghcr.io"
+TOKEN_SERVICE = "ghcr.io"
+MANIFEST_TTL = "300"
+BLOB_TTL = "86400"
+RATE_LIMIT_PER_MIN = "600"
+
+# 可选限流 KV：wrangler kv namespace create HUB_KV，然后把 id 填进来
+# [[kv_namespaces]]
+# binding = "HUB_KV"
+# id = "REPLACE_WITH_KV_NAMESPACE_ID"

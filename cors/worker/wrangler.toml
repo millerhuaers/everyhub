@@ -1,0 +1,26 @@
+name = "everyhub-cors"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+# 前端使用：在目标地址前加 https://cors.everyhub.top/ 前缀
+# 自定义域名：先在 Cloudflare 账号添加 cors.everyhub.top，再取消下面注释
+# routes = [{ pattern = "cors.everyhub.top", custom_domain = true }]
+
+[vars]
+# 域名后缀白名单，逗号分隔；留空 = 允许所有公网域名
+ALLOWED_HOSTS = ""
+# http:// 目标是否保持明文；默认 false = 自动升级为 https://
+ALLOW_HTTP = "false"
+# 是否透传客户端的 authorization 头；设为 "false" 可禁用
+FORWARD_AUTH = "true"
+# 响应体上限（字节），默认 50MB
+MAX_BYTES = "52428800"
+# GET 响应边缘缓存秒数，0 = 不缓存（动态接口建议保持 0）
+CACHE_TTL = "0"
+RATE_LIMIT_PER_MIN = "240"
+
+# 可选限流 KV：wrangler kv namespace create HUB_KV，然后把 id 填进来
+# [[kv_namespaces]]
+# binding = "HUB_KV"
+# id = "REPLACE_WITH_KV_NAMESPACE_ID"

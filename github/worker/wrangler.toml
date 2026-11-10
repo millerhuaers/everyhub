@@ -1,0 +1,17 @@
+name = "everyhub-github"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+# 前端使用：github 页以 https://git.everyhub.top 为前缀
+# 自定义域名：先在 Cloudflare 账号添加 git.everyhub.top，再取消下面注释
+# routes = [{ pattern = "git.everyhub.top", custom_domain = true }]
+
+[vars]
+CACHE_TTL = "3600"
+RATE_LIMIT_PER_MIN = "240"
+
+# 可选限流 KV：wrangler kv namespace create HUB_KV，然后把 id 填进来
+# [[kv_namespaces]]
+# binding = "HUB_KV"
+# id = "REPLACE_WITH_KV_NAMESPACE_ID"
