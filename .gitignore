@@ -2,6 +2,9 @@
 .vercel/
 .wrangler/
 
+# 旧后端源码备份（仅本地参考，不同步）
+**/worker/worker.js
+
 # 依赖（如临时安装 CLI 工具）
 node_modules/
 

@@ -12,6 +12,7 @@
 ├── imgur/            # Imgur 图片代理
 ├── weibo/            # 微博图片代理
 ├── cors/             # CORS 跨域代理
+├── moyu/             # 聆听卡密落地页
 ├── vercel.json       # Vercel 部署配置（缓存 / 安全响应头）
 ├── wrangler.toml     # Cloudflare Pages 部署配置
 └── _headers          # Cloudflare Pages 响应头规则
@@ -74,6 +75,6 @@ vercel --prod
 
 ## 备注
 
-- 页面间跳转使用相对路径（`./docker/`、`../ghcr/`），单域名即可跑通全站，无需为每个服务单独绑定子域名。
+- 页面间跳转统一使用服务子域名（如 `docker.everyhub.top`、`cors.everyhub.top`），需要为每个服务绑定对应子域名。
 - API（api.everyhub.top）与 iKMS（ikms.eu.org）为外部服务链接，不在本仓库内。
 - Docker / GHCR 等加速服务本体为 Cloudflare Workers，独立部署，本仓库只承载其文档页。

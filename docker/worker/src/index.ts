@@ -28,6 +28,8 @@ interface Ctx {
 }
 
 const SERVICE = 'docker';
+const WORKERS_HOST = 'docker.everyhub.top';
+const HOME_PAGE_URL = 'https://everyhub.top/docker/index.html';
 const ACCEPT_DEFAULT = [
   'application/vnd.oci.image.index.v1+json',
   'application/vnd.docker.distribution.manifest.list.v2+json',
@@ -157,7 +159,38 @@ async function handle(req: Request, env: Env, ctx: Ctx): Promise<Response> {
     return json({ ok: true, service: SERVICE, upstream: env.UPSTREAM_HOST, time: new Date().toISOString() });
   }
   if (url.pathname === '/' || url.pathname === '') {
+    try {
+      const homeRes = await fetchTimeout(HOME_PAGE_URL, { method: 'GET', headers: { 'user-agent': 'EveryHubRegistryProxy/1.0' } }, 15000);
+      if (homeRes.ok) {
+        const text = (await homeRes.text()).replace(/{workers_host}/g, WORKERS_HOST);
+        return new Response(text, {
+          status: 200,
+          headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=300', ...corsHeaders('GET, HEAD, OPTIONS') },
+        });
+      }
+    } catch { /* 首页回源失败则回退 JSON 清单 */ }
     return json({ service: `${SERVICE} registry proxy`, upstream: env.UPSTREAM_HOST, endpoints: ['/v2/'] });
+  }
+  if (url.pathname === '/token') {
+    const tokenUrl = `https://${env.TOKEN_HOST}/token${url.search}`;
+    const tokenHeaders = new Headers();
+    for (const name of ['user-agent', 'accept', 'accept-language', 'accept-encoding']) {
+      const value = req.headers.get(name);
+      if (value) tokenHeaders.set(name, value);
+    }
+    if (env.UPSTREAM_USERNAME && env.UPSTREAM_PASSWORD) {
+      tokenHeaders.set('authorization', `Basic ${btoa(`${env.UPSTREAM_USERNAME}:${env.UPSTREAM_PASSWORD}`)}`);
+    }
+    try {
+      const tokenRes = await fetchTimeout(tokenUrl, { method: req.method, headers: tokenHeaders }, 15000);
+      return withHeaders(new Response(req.method === 'HEAD' ? null : tokenRes.body, {
+        status: tokenRes.status,
+        statusText: tokenRes.statusText,
+        headers: sanitizeHeaders(tokenRes.headers),
+      }), corsHeaders('GET, HEAD, OPTIONS'));
+    } catch {
+      return errorResponse(502, 'upstream_unreachable', req);
+    }
   }
   const adminRes = await admin(req, env, ctx);
   if (adminRes) return adminRes;
@@ -191,7 +224,7 @@ async function handle(req: Request, env: Env, ctx: Ctx): Promise<Response> {
   if (repo === '_') repo = 'library';
   else if (repo.startsWith('_/')) repo = `library/${repo.slice(2)}`;
 
-  const upstreamUrl = `https://${env.UPSTREAM_HOST}/v2/${repo}/${kind}/${ref}`;
+  const upstreamUrl = `https://${env.UPSTREAM_HOST}/v2/${repo}/${kind}/${ref}${url.search}`;
   const ttl = kind === 'blobs'
     ? parseInt(env.BLOB_TTL || '86400', 10)
     : parseInt(env.MANIFEST_TTL || '300', 10);
@@ -224,6 +257,12 @@ async function handle(req: Request, env: Env, ctx: Ctx): Promise<Response> {
   }
 
   const outHeaders = sanitizeHeaders(upstreamRes.headers);
+  // 把上游 401 的 realm 改回本 Worker，客户端才能访问到 /token
+  const wwwAuth = outHeaders.get('www-authenticate');
+  if (wwwAuth) {
+    const upstreamRealm = `https://${env.TOKEN_HOST}`;
+    outHeaders.set('www-authenticate', wwwAuth.split(upstreamRealm).join(`https://${WORKERS_HOST}`));
+  }
   const out = new Response(req.method === 'HEAD' ? null : upstreamRes.body, {
     status: upstreamRes.status,
     statusText: upstreamRes.statusText,
